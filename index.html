@@ -1476,6 +1476,20 @@
                     </div>
                     <p class="pm-desc" id="pm-description"></p>
                     
+                    <div class="pm-specs" id="pm-specs" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
+                        <h4 style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-primary); margin-bottom:10px;">Product Specifications (تفاصيل المنتج)</h4>
+                        <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--text-secondary);">
+                            <div id="spec-shrinkage-container" style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-weight:600; color:var(--text-primary);">🧵 نسبة الانكماش:</span>
+                                <span id="spec-shrinkage"></span>
+                            </div>
+                            <div id="spec-dimensions-container" style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+                                <span style="font-weight:600; color:var(--text-primary);">📏 جدول المقاسات والأبعاد (بالسنتي):</span>
+                                <span id="spec-dimensions" style="font-family:monospace; background:var(--bg-secondary); padding:8px 12px; border-radius:4px; margin-top:4px; white-space:pre-wrap; font-size:12px; line-height:1.4;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="pm-options">
                         <div class="pm-option-group" id="pm-sizes-group">
                             <label>Select Size</label>
@@ -1508,7 +1522,7 @@
 
     async function loadCategories(){if(!supabase)throw new Error('No client');const{data,error}=await supabase.from('categories').select('*').order('name');if(error)throw error;catalogCategories=data||[];renderCategoryFilters();}
 
-    async function loadProducts(f={}){if(!supabase)throw new Error('No client');let q=supabase.from('products').select('*, categories(name)').eq('is_visible',true);if(f.category)q=q.eq('category_id',f.category);if(f.search)q=q.ilike('name',`%${f.search}%`);if(f.size)q=q.contains('sizes',[f.size]);if(f.color)q=q.contains('colors',[f.color]);if(f.inStock)q=q.gt('stock_quantity',0);const{data,error}=await q.order('created_at',{ascending:false});if(error)throw error;catalogProducts=(data||[]).map(p=>({id:p.id,name:p.name,category:p.categories?.name||'',price:p.discount_price||p.price,originalPrice:p.price,image:p.images?.[0]||'',images:p.images||[],sizes:p.sizes||[],colors:p.colors||[],stock:p.stock_quantity,description:p.description}));catalogProducts.forEach(i=>{if(i.sizes?.length>0&&!selectedSizes[i.id])selectedSizes[i.id]=i.sizes[0];if(i.colors?.length>0&&!selectedColors[i.id])selectedColors[i.id]=i.colors[0];});render();}
+    async function loadProducts(f={}){if(!supabase)throw new Error('No client');let q=supabase.from('products').select('*, categories(name)').eq('is_visible',true);if(f.category)q=q.eq('category_id',f.category);if(f.search)q=q.ilike('name',`%${f.search}%`);if(f.size)q=q.contains('sizes',[f.size]);if(f.color)q=q.contains('colors',[f.color]);if(f.inStock)q=q.gt('stock_quantity',0);const{data,error}=await q.order('created_at',{ascending:false});if(error)throw error;catalogProducts=(data||[]).map(p=>({id:p.id,name:p.name,category:p.categories?.name||'',price:p.discount_price||p.price,originalPrice:p.price,image:p.images?.[0]||'',images:p.images||[],sizes:p.sizes||[],colors:p.colors||[],stock:p.stock_quantity,description:p.description,shrinkage:p.shrinkage_pct,dimensions:p.size_dimensions}));catalogProducts.forEach(i=>{if(i.sizes?.length>0&&!selectedSizes[i.id])selectedSizes[i.id]=i.sizes[0];if(i.colors?.length>0&&!selectedColors[i.id])selectedColors[i.id]=i.colors[0];});render();}
 
     function loadDemoProducts(){const d=[
         {id:'d0',name:'Aviator Leather Jacket',category:'Jackets',price:2890,originalPrice:2890,image:'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=700&q=80',images:['https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=700&q=80', 'https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=700&q=80', 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=80'],sizes:['S','M','L','XL'],colors:['Black','Brown'],stock:10},
@@ -1592,6 +1606,36 @@
             selectedModalColor = null;
         }
         
+        const specsEl = document.getElementById('pm-specs');
+        const shrinkContainer = document.getElementById('spec-shrinkage-container');
+        const shrinkVal = document.getElementById('spec-shrinkage');
+        const dimContainer = document.getElementById('spec-dimensions-container');
+        const dimVal = document.getElementById('spec-dimensions');
+
+        let hasSpecs = false;
+
+        if (p.shrinkage) {
+            shrinkContainer.style.display = 'flex';
+            shrinkVal.textContent = p.shrinkage;
+            hasSpecs = true;
+        } else {
+            shrinkContainer.style.display = 'none';
+        }
+
+        if (p.dimensions) {
+            dimContainer.style.display = 'flex';
+            dimVal.textContent = p.dimensions;
+            hasSpecs = true;
+        } else {
+            dimContainer.style.display = 'none';
+        }
+
+        if (hasSpecs) {
+            specsEl.style.display = 'block';
+        } else {
+            specsEl.style.display = 'none';
+        }
+
         document.getElementById('product-modal').style.display = 'flex';
         document.getElementById('overlay').classList.add('visible');
     }

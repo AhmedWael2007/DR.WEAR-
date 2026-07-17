@@ -367,6 +367,16 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="form-grid" style="margin-bottom: 16px;">
+                            <div class="form-group">
+                                <label for="prod-shrinkage">Shrinkage Percentage</label>
+                                <input type="text" id="prod-shrinkage" placeholder="e.g. 3% to 5%">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-dimensions">Size Dimensions / Chart</label>
+                                <input type="text" id="prod-dimensions" placeholder="e.g. S: 50x70cm, M: 52x72cm">
+                            </div>
+                        </div>
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label for="prod-image">Image URLs (comma separated for multiple)</label>
                             <input type="text" id="prod-image" placeholder="https://image1.com, https://image2.com, ...">
@@ -755,6 +765,8 @@
             document.getElementById('prod-stock').value = p.stock_quantity;
             document.getElementById('prod-visible').value = p.is_visible ? 'true' : 'false';
             document.getElementById('prod-image').value = (p.images || []).join(', ');
+            document.getElementById('prod-shrinkage').value = p.shrinkage_pct || '';
+            document.getElementById('prod-dimensions').value = p.size_dimensions || '';
             document.getElementById('prod-desc').value = p.description || '';
             document.getElementById('product-form').scrollIntoView();
         }
@@ -777,6 +789,8 @@
                 stock_quantity: parseInt(document.getElementById('prod-stock').value),
                 is_visible: document.getElementById('prod-visible').value === 'true',
                 images: document.getElementById('prod-image').value.split(',').map(img => img.trim()).filter(Boolean),
+                shrinkage_pct: document.getElementById('prod-shrinkage').value.trim() || null,
+                size_dimensions: document.getElementById('prod-dimensions').value.trim() || null,
                 description: document.getElementById('prod-desc').value
             };
 
