@@ -5,19 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>DR.WEAR | Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-card: #161616;
-            --burgundy: #8B2252;
-            --burgundy-light: #a83267;
-            --burgundy-glow: rgba(139, 34, 82, 0.15);
-            --text-primary: #f5f0eb;
-            --text-secondary: #8a8680;
-            --text-muted: #5a5652;
-            --border: rgba(255, 255, 255, 0.06);
+            --bg-primary: #ffffff;
+            --bg-secondary: #fcfcfc;
+            --bg-card: #ffffff;
+            --burgundy: #ff0000;
+            --burgundy-light: #d60000;
+            --burgundy-glow: rgba(255, 0, 0, 0.15);
+            --text-primary: #0f0f0f;
+            --text-secondary: #555555;
+            --text-muted: #888888;
+            --border: rgba(0, 0, 0, 0.08);
             --radius: 12px;
             --radius-sm: 6px;
             --transition: all 0.3s ease;
@@ -27,7 +27,7 @@
         body {
             background: var(--bg-primary);
             color: var(--text-primary);
-            font-family: 'Manrope', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
             padding: 24px;
         }
@@ -364,8 +364,8 @@
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom: 16px;">
-                            <label for="prod-image">Image URL</label>
-                            <input type="text" id="prod-image" placeholder="https://images.unsplash.com/... or upload receipt path">
+                            <label for="prod-image">Image URLs (comma separated for multiple)</label>
+                            <input type="text" id="prod-image" placeholder="https://image1.com, https://image2.com, ...">
                         </div>
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label for="prod-desc">Description</label>
@@ -650,7 +650,7 @@
             document.getElementById('prod-colors').value = (p.colors || []).join(', ');
             document.getElementById('prod-stock').value = p.stock_quantity;
             document.getElementById('prod-visible').value = p.is_visible ? 'true' : 'false';
-            document.getElementById('prod-image').value = p.images?.[0] || '';
+            document.getElementById('prod-image').value = (p.images || []).join(', ');
             document.getElementById('prod-desc').value = p.description || '';
             document.getElementById('product-form').scrollIntoView();
         }
@@ -672,7 +672,7 @@
                 colors: document.getElementById('prod-colors').value.split(',').map(c => c.trim()).filter(Boolean),
                 stock_quantity: parseInt(document.getElementById('prod-stock').value),
                 is_visible: document.getElementById('prod-visible').value === 'true',
-                images: [document.getElementById('prod-image').value].filter(Boolean),
+                images: document.getElementById('prod-image').value.split(',').map(img => img.trim()).filter(Boolean),
                 description: document.getElementById('prod-desc').value
             };
 
