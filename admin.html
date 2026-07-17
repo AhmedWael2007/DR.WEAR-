@@ -260,7 +260,7 @@
         <div id="login-screen">
             <div class="card login-card">
                 <h2>Admin Login</h2>
-                <form id="login-form" onsubmit="handleLogin(event)">
+                <form id="login-form" onsubmit="handleAuth(event)">
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label for="admin-email">Email Address</label>
                         <input type="email" id="admin-email" required placeholder="admin@drwear.com">
@@ -270,6 +270,9 @@
                         <input type="password" id="admin-password" required placeholder="••••••••">
                     </div>
                     <button type="submit" class="btn" style="width: 100%;">Login</button>
+                    <p style="margin-top: 16px; font-size: 13px; text-align: center;" id="auth-toggle-container">
+                        Need an account? <a href="#" onclick="toggleAuthMode(true); return false;" style="color: var(--burgundy-light); font-weight: 600;">Register as Admin</a>
+                    </p>
                     <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted); text-align: center;">
                         Make sure config.js has your valid Supabase Credentials.
                     </p>
@@ -290,6 +293,7 @@
                 <button class="tab-btn" onclick="switchTab('categories')">Categories</button>
                 <button class="tab-btn" onclick="switchTab('coupons')">Coupons</button>
                 <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+                <button class="tab-btn" onclick="switchTab('admins')">Admins</button>
             </div>
 
             <!-- Orders Tab -->
@@ -524,6 +528,35 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Admins Tab -->
+            <div id="admins-tab" class="tab-content">
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2>Authorize New Admin</h2>
+                    <form id="add-admin-form" onsubmit="addAdmin(event)">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="admin-new-email">Admin Email</label>
+                            <input type="email" id="admin-new-email" required placeholder="example@drwear.com">
+                        </div>
+                        <button type="submit" class="btn">Authorize Email</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Authorized Admins List</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Email Address</th>
+                                    <th>Authorized Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-admins-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -535,6 +568,25 @@
             checkUser();
         });
 
+        let isRegisterMode = false;
+
+        function toggleAuthMode(toRegister) {
+            isRegisterMode = toRegister;
+            const title = document.querySelector('.login-card h2');
+            const submitBtn = document.querySelector('#login-form button[type="submit"]');
+            const toggleContainer = document.getElementById('auth-toggle-container');
+            
+            if (isRegisterMode) {
+                title.textContent = "Admin Registration";
+                submitBtn.textContent = "Register Account";
+                toggleContainer.innerHTML = 'Already have an account? <a href="#" onclick="toggleAuthMode(false); return false;" style="color: var(--burgundy-light); font-weight: 600;">Login</a>';
+            } else {
+                title.textContent = "Admin Login";
+                submitBtn.textContent = "Login";
+                toggleContainer.innerHTML = 'Need an account? <a href="#" onclick="toggleAuthMode(true); return false;" style="color: var(--burgundy-light); font-weight: 600;">Register as Admin</a>';
+            }
+        }
+
         async function checkUser() {
             if (!db) {
                 alert("Supabase client is not loaded. Ensure config.js is properly set up.");
@@ -542,6 +594,13 @@
             }
             const { data: { user } } = await db.auth.getUser();
             if (user) {
+                // Check if authorized
+                const { data: authAdmin, error: authError } = await db.from('authorized_admins').select('*').eq('email', user.email).single();
+                if (authError || !authAdmin) {
+                    await db.auth.signOut();
+                    showLogin();
+                    return;
+                }
                 showPanel();
             } else {
                 showLogin();
@@ -559,15 +618,39 @@
             loadData();
         }
 
-        async function handleLogin(e) {
+        async function handleAuth(e) {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value;
+            const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value;
-            const { error } = await db.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert("Login failed: " + error.message);
+
+            if (isRegisterMode) {
+                const { data, error: checkError } = await db.from('authorized_admins').select('*').eq('email', email).single();
+                if (checkError || !data) {
+                    alert("Registration failed: This email address is not authorized to register as an admin.");
+                    return;
+                }
+                
+                const { error: signUpError } = await db.auth.signUp({ email, password });
+                if (signUpError) {
+                    alert("Registration failed: " + signUpError.message);
+                } else {
+                    alert("Registration successful! You can now log in.");
+                    toggleAuthMode(false);
+                }
             } else {
-                showPanel();
+                const { error } = await db.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert("Login failed: " + error.message);
+                } else {
+                    const { data: authAdmin, error: authError } = await db.from('authorized_admins').select('*').eq('email', email).single();
+                    if (authError || !authAdmin) {
+                        await db.auth.signOut();
+                        alert("Access Denied: You are not authorized as an admin.");
+                        showLogin();
+                        return;
+                    }
+                    showPanel();
+                }
             }
         }
 
@@ -591,6 +674,7 @@
             loadCategories();
             loadCoupons();
             loadSettings();
+            loadAdmins();
         }
 
         async function loadOrders() {
@@ -828,6 +912,53 @@
             else {
                 alert("Settings updated successfully!");
                 loadSettings();
+            }
+        }
+
+        async function loadAdmins() {
+            const { data, error } = await db.from('authorized_admins').select('*').order('created_at', { ascending: true });
+            if (error) return console.error(error);
+
+            const list = document.getElementById('admin-admins-list');
+            list.innerHTML = data.map(admin => `
+                <tr>
+                    <td><strong>${admin.email}</strong></td>
+                    <td>${new Date(admin.created_at).toLocaleString()}</td>
+                    <td>
+                        <button class="action-btn" onclick="deleteAdmin('${admin.email}')" ${admin.email === 'admin@drwear.com' ? 'disabled' : ''}>Revoke Access</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function addAdmin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-new-email').value.trim();
+            if (!email) return;
+
+            const { error } = await db.from('authorized_admins').insert([{ email }]);
+            if (error) {
+                alert("Error authorizing email: " + error.message);
+            } else {
+                document.getElementById('admin-new-email').value = '';
+                alert("Email authorized successfully! They can now register or log in.");
+                loadAdmins();
+            }
+        }
+
+        async function deleteAdmin(email) {
+            if (email === 'admin@drwear.com') {
+                alert("Cannot revoke access for main administrator account.");
+                return;
+            }
+            if (!confirm(`Are you sure you want to revoke admin access for ${email}?`)) return;
+
+            const { error } = await db.from('authorized_admins').delete().eq('email', email);
+            if (error) {
+                alert("Error revoking access: " + error.message);
+            } else {
+                alert("Access revoked successfully!");
+                loadAdmins();
             }
         }
     </script>
