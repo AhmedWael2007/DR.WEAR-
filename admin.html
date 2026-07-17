@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DR.WEAR | Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --burgundy: #8B2252;
+            --burgundy-light: #a83267;
+            --burgundy-glow: rgba(139, 34, 82, 0.15);
+            --text-primary: #f5f0eb;
+            --text-secondary: #8a8680;
+            --text-muted: #5a5652;
+            --border: rgba(255, 255, 255, 0.06);
+            --radius: 12px;
+            --radius-sm: 6px;
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        h1 em {
+            color: var(--burgundy-light);
+            font-style: normal;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: var(--burgundy);
+            color: #fff;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 15px var(--burgundy-glow);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards & UI elements */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input, select, textarea {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--burgundy);
+            box-shadow: 0 0 10px var(--burgundy-glow);
+        }
+
+        .btn {
+            background: var(--burgundy);
+            color: #fff;
+            border: 0;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:hover {
+            background: var(--burgundy-light);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.pending { background: #d97706; color: #fff; }
+        .badge.processing { background: #2563eb; color: #fff; }
+        .badge.shipped { background: #7c3aed; color: #fff; }
+        .badge.delivered { background: #059669; color: #fff; }
+        .badge.cancelled { background: #dc2626; color: #fff; }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: 0;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            color: var(--burgundy-light);
+        }
+
+        .receipt-link {
+            color: var(--burgundy-light);
+            text-decoration: underline;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="login-screen">
+            <div class="card login-card">
+                <h2>Admin Login</h2>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="admin-email">Email Address</label>
+                        <input type="email" id="admin-email" required placeholder="admin@drwear.com">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="admin-password">Password</label>
+                        <input type="password" id="admin-password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Login</button>
+                    <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted); text-align: center;">
+                        Make sure config.js has your valid Supabase Credentials.
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Panel Section (Hidden by default) -->
+        <div id="admin-panel" style="display: none;">
+            <header>
+                <h1>DR.<em>WEAR</em> Admin</h1>
+                <button class="btn btn-secondary" onclick="handleLogout()">Logout</button>
+            </header>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('orders')">Orders</button>
+                <button class="tab-btn" onclick="switchTab('products')">Products</button>
+                <button class="tab-btn" onclick="switchTab('categories')">Categories</button>
+                <button class="tab-btn" onclick="switchTab('coupons')">Coupons</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="orders-tab" class="tab-content active">
+                <div class="card">
+                    <h2>Recent Orders</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Address</th>
+                                    <th>Payment</th>
+                                    <th>Receipt</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-list">
+                                <tr><td colspan="8" style="text-align:center;">Loading orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="products-tab" class="tab-content">
+                <div class="card">
+                    <h2>Add New Product</h2>
+                    <form id="product-form" onsubmit="saveProduct(event)">
+                        <input type="hidden" id="prod-id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="prod-name">Product Name</label>
+                                <input type="text" id="prod-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-category">Category</label>
+                                <select id="prod-category" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-price">Price (EGP)</label>
+                                <input type="number" id="prod-price" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-discount">Discount Price (EGP)</label>
+                                <input type="number" id="prod-discount">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="prod-sizes">Sizes (Comma separated)</label>
+                                <input type="text" id="prod-sizes" placeholder="S, M, L, XL">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-colors">Colors (Comma separated)</label>
+                                <input type="text" id="prod-colors" placeholder="Black, Grey, Navy">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-stock">Stock Quantity</label>
+                                <input type="number" id="prod-stock" required value="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-visible">Visibility</label>
+                                <select id="prod-visible">
+                                    <option value="true">Visible</option>
+                                    <option value="false">Hidden</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="prod-image">Image URL</label>
+                            <input type="text" id="prod-image" placeholder="https://images.unsplash.com/... or upload receipt path">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="prod-desc">Description</label>
+                            <textarea id="prod-desc" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Save Product</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancel</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Catalog Products</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-products-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content">
+                <div class="card">
+                    <h2>Add Category</h2>
+                    <form id="category-form" onsubmit="saveCategory(event)">
+                        <div class="form-group" style="margin-bottom: 16px; max-width: 400px;">
+                            <label for="cat-name">Category Name</label>
+                            <input type="text" id="cat-name" required>
+                        </div>
+                        <button type="submit" class="btn">Add Category</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>All Categories</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-categories-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coupons Tab -->
+            <div id="coupons-tab" class="tab-content">
+                <div class="card">
+                    <h2>Add Coupon</h2>
+                    <form id="coupon-form" onsubmit="saveCoupon(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="coup-code">Code</label>
+                                <input type="text" id="coup-code" required placeholder="SAVE20" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label for="coup-type">Discount Type</label>
+                                <select id="coup-type">
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="fixed">Fixed Value (EGP)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="coup-value">Discount Value</label>
+                                <input type="number" id="coup-value" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="coup-limit">Usage Limit</label>
+                                <input type="number" id="coup-limit" placeholder="Unlimited">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Create Coupon</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Active Coupons</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Used</th>
+                                    <th>Limit</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-coupons-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="card">
+                    <h2>Store Settings</h2>
+                    <form id="settings-form" onsubmit="saveSettings(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="set-whatsapp">WhatsApp Phone Number</label>
+                                <input type="text" id="set-whatsapp" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-cash">Vodafone Cash Number</label>
+                                <input type="text" id="set-cash" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-fee">Standard Delivery Fee (EGP)</label>
+                                <input type="number" id="set-fee" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-free">Free Delivery Threshold (EGP)</label>
+                                <input type="number" id="set-free" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Update Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if config loaded supabase
+        let db = (typeof supabase !== 'undefined') ? supabase : null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUser();
+        });
+
+        async function checkUser() {
+            if (!db) {
+                alert("Supabase client is not loaded. Ensure config.js is properly set up.");
+                return;
+            }
+            const { data: { user } } = await db.auth.getUser();
+            if (user) {
+                showPanel();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        function showPanel() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            loadData();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const { error } = await db.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert("Login failed: " + error.message);
+            } else {
+                showPanel();
+            }
+        }
+
+        async function handleLogout() {
+            await db.auth.signOut();
+            showLogin();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId + '-tab').classList.add('active');
+        }
+
+        // --- DATA LOADERS ---
+        async function loadData() {
+            loadOrders();
+            loadProducts();
+            loadCategories();
+            loadCoupons();
+            loadSettings();
+        }
+
+        async function loadOrders() {
+            const { data, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+            
+            const list = document.getElementById('orders-list');
+            if (data.length === 0) {
+                list.innerHTML = '<tr><td colspan="8" style="text-align:center;">No orders found.</td></tr>';
+                return;
+            }
+            list.innerHTML = data.map(o => `
+                <tr>
+                    <td><strong>${o.order_number}</strong></td>
+                    <td>${o.cust_name}<br><small style="color:var(--text-secondary);">${o.cust_phone}</small></td>
+                    <td>${o.shipping_addr}, ${o.cust_gov}</td>
+                    <td>${o.pay_method.toUpperCase()}</td>
+                    <td>${o.receipt_url ? `<a href="${o.receipt_url}" target="_blank" class="receipt-link">View Receipt</a>` : 'N/A'}</td>
+                    <td>EGP ${o.total.toLocaleString()}</td>
+                    <td>
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="badge ${o.status}">
+                            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="deleteOrder('${o.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            const { error } = await db.from('orders').update({ status: newStatus }).eq('id', orderId);
+            if (error) alert("Error updating status: " + error.message);
+            else loadOrders();
+        }
+
+        async function deleteOrder(orderId) {
+            if (!confirm("Are you sure you want to delete this order?")) return;
+            const { error } = await db.from('orders').delete().eq('id', orderId);
+            if (error) alert(error.message);
+            else loadOrders();
+        }
+
+        async function loadProducts() {
+            const { data, error } = await db.from('products').select('*, categories(name)').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+
+            const list = document.getElementById('admin-products-list');
+            list.innerHTML = data.map(p => `
+                <tr>
+                    <td><img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.categories?.name || 'Uncategorized'}</td>
+                    <td>EGP ${p.price.toLocaleString()}</td>
+                    <td>${p.stock_quantity}</td>
+                    <td>${p.is_visible ? 'Visible' : 'Hidden'}</td>
+                    <td class="action-btns">
+                        <button class="action-btn" onclick="editProduct(${JSON.stringify(p).replace(/"/g, '&quot;')})">Edit</button>
+                        <button class="action-btn" onclick="deleteProduct('${p.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editProduct(p) {
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-name').value = p.name;
+            document.getElementById('prod-category').value = p.category_id;
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-discount').value = p.discount_price || '';
+            document.getElementById('prod-sizes').value = (p.sizes || []).join(', ');
+            document.getElementById('prod-colors').value = (p.colors || []).join(', ');
+            document.getElementById('prod-stock').value = p.stock_quantity;
+            document.getElementById('prod-visible').value = p.is_visible ? 'true' : 'false';
+            document.getElementById('prod-image').value = p.images?.[0] || '';
+            document.getElementById('prod-desc').value = p.description || '';
+            document.getElementById('product-form').scrollIntoView();
+        }
+
+        function resetProductForm() {
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+        }
+
+        async function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const payload = {
+                name: document.getElementById('prod-name').value,
+                category_id: document.getElementById('prod-category').value,
+                price: parseFloat(document.getElementById('prod-price').value),
+                discount_price: parseFloat(document.getElementById('prod-discount').value) || null,
+                sizes: document.getElementById('prod-sizes').value.split(',').map(s => s.trim()).filter(Boolean),
+                colors: document.getElementById('prod-colors').value.split(',').map(c => c.trim()).filter(Boolean),
+                stock_quantity: parseInt(document.getElementById('prod-stock').value),
+                is_visible: document.getElementById('prod-visible').value === 'true',
+                images: [document.getElementById('prod-image').value].filter(Boolean),
+                description: document.getElementById('prod-desc').value
+            };
+
+            let res;
+            if (id) {
+                res = await db.from('products').update(payload).eq('id', id);
+            } else {
+                res = await db.from('products').insert([payload]);
+            }
+
+            if (res.error) alert(res.error.message);
+            else {
+                resetProductForm();
+                loadProducts();
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("Are you sure?")) return;
+            const { error } = await db.from('products').delete().eq('id', id);
+            if (error) alert(error.message);
+            else loadProducts();
+        }
+
+        async function loadCategories() {
+            const { data, error } = await db.from('categories').select('*').order('name');
+            if (error) return console.error(error);
+
+            // Populate product form categories select
+            const select = document.getElementById('prod-category');
+            select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            const list = document.getElementById('admin-categories-list');
+            list.innerHTML = data.map(c => `
+                <tr>
+                    <td>${c.id}</td>
+                    <td><strong>${c.name}</strong></td>
+                    <td><button class="action-btn" onclick="deleteCategory('${c.id}')">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('cat-name').value;
+            const { error } = await db.from('categories').insert([{ name }]);
+            if (error) alert(error.message);
+            else {
+                document.getElementById('cat-name').value = '';
+                loadCategories();
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm("Are you sure? This will affect products in this category.")) return;
+            const { error } = await db.from('categories').delete().eq('id', id);
+            if (error) alert(error.message);
+            else loadCategories();
+        }
+
+        async function loadCoupons() {
+            const { data, error } = await db.from('coupons').select('*').order('code');
+            if (error) return console.error(error);
+
+            const list = document.getElementById('admin-coupons-list');
+            list.innerHTML = data.map(c => `
+                <tr>
+                    <td><strong>${c.code}</strong></td>
+                    <td>${c.discount_type}</td>
+                    <td>${c.discount_value}</td>
+                    <td>${c.usage_count}</td>
+                    <td>${c.usage_limit || 'Unlimited'}</td>
+                    <td><button class="action-btn" onclick="deleteCoupon('${c.id}')">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveCoupon(e) {
+            e.preventDefault();
+            const payload = {
+                code: document.getElementById('coup-code').value.toUpperCase().trim(),
+                discount_type: document.getElementById('coup-type').value,
+                discount_value: parseFloat(document.getElementById('coup-value').value),
+                usage_limit: parseInt(document.getElementById('coup-limit').value) || null
+            };
+
+            const { error } = await db.from('coupons').insert([payload]);
+            if (error) alert(error.message);
+            else {
+                document.getElementById('coupon-form').reset();
+                loadCoupons();
+            }
+        }
+
+        async function deleteCoupon(id) {
+            if (!confirm("Are you sure?")) return;
+            const { error } = await db.from('coupons').delete().eq('id', id);
+            if (error) alert(error.message);
+            else loadCoupons();
+        }
+
+        async function loadSettings() {
+            const { data, error } = await db.from('settings').select('*').eq('id', 1).single();
+            if (error) return console.error(error);
+
+            document.getElementById('set-whatsapp').value = data.whatsapp_number;
+            document.getElementById('set-cash').value = data.vodafone_cash_number;
+            document.getElementById('set-fee').value = data.delivery_fee;
+            document.getElementById('set-free').value = data.free_shipping_threshold;
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault();
+            const payload = {
+                whatsapp_number: document.getElementById('set-whatsapp').value,
+                vodafone_cash_number: document.getElementById('set-cash').value,
+                delivery_fee: parseFloat(document.getElementById('set-fee').value),
+                free_shipping_threshold: parseFloat(document.getElementById('set-free').value)
+            };
+
+            const { error } = await db.from('settings').update(payload).eq('id', 1);
+            if (error) alert(error.message);
+            else {
+                alert("Settings updated successfully!");
+                loadSettings();
+            }
+        }
+    </script>
+</body>
+
+</html>
