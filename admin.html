@@ -499,6 +499,26 @@
                                 <label for="set-free">Free Delivery Threshold (EGP)</label>
                                 <input type="number" id="set-free" required>
                             </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="set-hero-image">Hero Banner Image URL</label>
+                                <input type="text" id="set-hero-image">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="set-story-image">Our Story Section Image URL</label>
+                                <input type="text" id="set-story-image">
+                            </div>
+                            <div class="form-group">
+                                <label for="set-cat-jackets-image">Jackets Category Banner URL</label>
+                                <input type="text" id="set-cat-jackets-image">
+                            </div>
+                            <div class="form-group">
+                                <label for="set-cat-hoodies-image">Hoodies Category Banner URL</label>
+                                <input type="text" id="set-cat-hoodies-image">
+                            </div>
+                            <div class="form-group">
+                                <label for="set-cat-tracksuits-image">Tracksuits Category Banner URL</label>
+                                <input type="text" id="set-cat-tracksuits-image">
+                            </div>
                         </div>
                         <button type="submit" class="btn">Update Settings</button>
                     </form>
@@ -778,10 +798,15 @@
             const { data, error } = await db.from('settings').select('*').eq('id', 1).single();
             if (error) return console.error(error);
 
-            document.getElementById('set-whatsapp').value = data.whatsapp_number;
-            document.getElementById('set-cash').value = data.vodafone_cash_number;
-            document.getElementById('set-fee').value = data.delivery_fee;
-            document.getElementById('set-free').value = data.free_shipping_threshold;
+            document.getElementById('set-whatsapp').value = data.whatsapp_number || '';
+            document.getElementById('set-cash').value = data.vodafone_cash_number || '';
+            document.getElementById('set-fee').value = data.delivery_fee || 0;
+            document.getElementById('set-free').value = data.free_shipping_threshold || 0;
+            document.getElementById('set-hero-image').value = data.hero_image || '';
+            document.getElementById('set-story-image').value = data.story_image || '';
+            document.getElementById('set-cat-jackets-image').value = data.cat_jackets_image || '';
+            document.getElementById('set-cat-hoodies-image').value = data.cat_hoodies_image || '';
+            document.getElementById('set-cat-tracksuits-image').value = data.cat_tracksuits_image || '';
         }
 
         async function saveSettings(e) {
@@ -790,7 +815,12 @@
                 whatsapp_number: document.getElementById('set-whatsapp').value,
                 vodafone_cash_number: document.getElementById('set-cash').value,
                 delivery_fee: parseFloat(document.getElementById('set-fee').value),
-                free_shipping_threshold: parseFloat(document.getElementById('set-free').value)
+                free_shipping_threshold: parseFloat(document.getElementById('set-free').value),
+                hero_image: document.getElementById('set-hero-image').value.trim() || null,
+                story_image: document.getElementById('set-story-image').value.trim() || null,
+                cat_jackets_image: document.getElementById('set-cat-jackets-image').value.trim() || null,
+                cat_hoodies_image: document.getElementById('set-cat-hoodies-image').value.trim() || null,
+                cat_tracksuits_image: document.getElementById('set-cat-tracksuits-image').value.trim() || null
             };
 
             const { error } = await db.from('settings').update(payload).eq('id', 1);

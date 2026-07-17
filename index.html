@@ -1298,7 +1298,7 @@
                 <a class="btn" href="#shop">Shop the collection →</a>
             </div>
             <div class="hero-img-container">
-                <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1400&q=85" alt="Male DR.WEAR model">
+                <img id="hero-img" src="https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1400&q=85" alt="Male DR.WEAR model">
             </div>
         </section>
 
@@ -1315,7 +1315,7 @@
             <div class="categories">
                 <a class="cat" href="#shop" onclick="filterProducts('Jackets')">
                     <div class="cat-img-container">
-                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80" alt="Jackets">
+                        <img id="cat-jackets-img" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80" alt="Jackets">
                     </div>
                     <div class="cat-text">
                         <span>01</span>
@@ -1324,7 +1324,7 @@
                 </a>
                 <a class="cat" href="#shop" onclick="filterProducts('Hoodies')">
                     <div class="cat-img-container">
-                        <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=80" alt="Hoodies">
+                        <img id="cat-hoodies-img" src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=80" alt="Hoodies">
                     </div>
                     <div class="cat-text">
                         <span>02</span>
@@ -1333,7 +1333,7 @@
                 </a>
                 <a class="cat" href="#shop" onclick="filterProducts('Tracksuits')">
                     <div class="cat-img-container">
-                        <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=900&q=80" alt="Tracksuits">
+                        <img id="cat-tracksuits-img" src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=900&q=80" alt="Tracksuits">
                     </div>
                     <div class="cat-text">
                         <span>03</span>
@@ -1363,7 +1363,7 @@
 
         <section class="story" id="story">
             <div class="story-img-container">
-                <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=1400&q=85" alt="Male model in streetwear">
+                <img id="story-img" src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=1400&q=85" alt="Male model in streetwear">
             </div>
             <div class="story-content">
                 <p class="tag">THE DR. APPROACH</p>
@@ -1499,7 +1499,7 @@
 
     async function initStore(){try{await Promise.all([loadSettings(),loadCategories(),loadProducts()]);if(catalogProducts.length===0){loadDemoProducts();}}catch(e){console.warn('Demo mode.',e.message);loadDemoProducts();}}
 
-    async function loadSettings(){if(!supabase)throw new Error('No client');const{data,error}=await supabase.from('settings').select('*').eq('id',1).single();if(error)throw error;storeSettings=data;const txt=`✦ NEW ARRIVAL ✦ FREE DELIVERY OVER EGP ${Number(data.free_shipping_threshold).toLocaleString()} ✦ EASY 14-DAY RETURNS ✦`;document.getElementById('promo-bar').textContent=txt;const p2=document.getElementById('promo-bar-2');if(p2)p2.textContent=txt;document.querySelectorAll('.cash-num').forEach(el=>el.textContent=data.vodafone_cash_number);}
+    async function loadSettings(){if(!supabase)throw new Error('No client');const{data,error}=await supabase.from('settings').select('*').eq('id',1).single();if(error)throw error;storeSettings=data;const txt=`✦ NEW ARRIVAL ✦ FREE DELIVERY OVER EGP ${Number(data.free_shipping_threshold).toLocaleString()} ✦ EASY 14-DAY RETURNS ✦`;document.getElementById('promo-bar').textContent=txt;const p2=document.getElementById('promo-bar-2');if(p2)p2.textContent=txt;document.querySelectorAll('.cash-num').forEach(el=>el.textContent=data.vodafone_cash_number);if(data.hero_image)document.getElementById('hero-img').src=data.hero_image;if(data.story_image)document.getElementById('story-img').src=data.story_image;if(data.cat_jackets_image)document.getElementById('cat-jackets-img').src=data.cat_jackets_image;if(data.cat_hoodies_image)document.getElementById('cat-hoodies-img').src=data.cat_hoodies_image;if(data.cat_tracksuits_image)document.getElementById('cat-tracksuits-img').src=data.cat_tracksuits_image;}
 
     async function loadCategories(){if(!supabase)throw new Error('No client');const{data,error}=await supabase.from('categories').select('*').order('name');if(error)throw error;catalogCategories=data||[];renderCategoryFilters();}
 
