@@ -901,7 +901,7 @@
         .whatsapp-btn:hover { background: #1ebd59; box-shadow: 0 6px 24px rgba(37, 211, 102, 0.3); transform: translateY(-1px); }
 
         /* ═══════ CHECKOUT ═══════ */
-        #checkout-form { flex: 1; overflow-y: auto; margin: 20px 0 0; padding-right: 4px; }
+        #checkout-form { flex: 1; overflow-y: auto; margin: 20px 0 0; padding-right: 4px; padding-bottom: 60px; }
         .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
 
         .form-group label {
@@ -1414,7 +1414,7 @@
                 <div class="form-group"><label for="cust-address">Delivery Address</label><input type="text" id="cust-address" required placeholder="Street, Building, Apartment"></div>
                 <div class="form-group">
                     <label for="cust-city">City / Governorate</label>
-                    <select id="cust-city" required>
+                    <select id="cust-city" required onchange="recalcCheckout()">
                         <option value="Cairo">Cairo</option><option value="Giza">Giza</option><option value="Alexandria">Alexandria</option>
                         <option value="Qalyubia">Qalyubia</option><option value="Gharbia">Gharbia</option><option value="Dakahlia">Dakahlia</option>
                         <option value="Sharqia">Sharqia</option><option value="Monufia">Monufia</option><option value="Beheira">Beheira</option>
@@ -1746,12 +1746,12 @@
     function showCheckout(){if(cartItems.length===0)return;document.getElementById('cart-main-view').classList.remove('active');document.getElementById('cart-checkout-view').classList.add('active');recalcCheckout();}
     function hideCheckout(){document.getElementById('cart-checkout-view').classList.remove('active');document.getElementById('cart-main-view').classList.add('active');}
 
-    function recalcCheckout(){const st=cartItems.reduce((s,i)=>s+i.price*i.qty,0),df=st>=storeSettings.free_shipping_threshold?0:storeSettings.delivery_fee,gt=st-appliedDiscount+df;document.getElementById('checkout-total').textContent='EGP '+st.toLocaleString();document.getElementById('checkout-delivery').textContent=df===0?'FREE':'EGP '+df.toLocaleString();document.getElementById('checkout-grand-total').textContent='EGP '+gt.toLocaleString();if(appliedDiscount>0){document.getElementById('discount-line').style.display='flex';document.getElementById('checkout-discount').textContent='- EGP '+appliedDiscount.toLocaleString();}else{document.getElementById('discount-line').style.display='none';}}
+    function recalcCheckout(){const st=cartItems.reduce((s,i)=>s+i.price*i.qty,0);const city=document.getElementById('cust-city').value;const baseFee=(city==='Cairo'||city==='Giza')?Number(storeSettings.delivery_fee):(Number(storeSettings.delivery_fee_provinces)||70);const df=st>=storeSettings.free_shipping_threshold?0:baseFee;const gt=st-appliedDiscount+df;document.getElementById('checkout-total').textContent='EGP '+st.toLocaleString();document.getElementById('checkout-delivery').textContent=df===0?'FREE':'EGP '+df.toLocaleString();document.getElementById('checkout-grand-total').textContent='EGP '+gt.toLocaleString();if(appliedDiscount>0){document.getElementById('discount-line').style.display='flex';document.getElementById('checkout-discount').textContent='- EGP '+appliedDiscount.toLocaleString();}else{document.getElementById('discount-line').style.display='none';}}
 
     async function applyCoupon(){const code=document.getElementById('coupon-code').value.trim().toUpperCase();if(!code)return;if(!supabase){updateCouponMsg('❌ Coupons require Supabase.',false);return;}try{const{data,error}=await supabase.from('coupons').select('*').eq('code',code).single();if(error||!data){updateCouponMsg('❌ Invalid coupon.',false);return;}if(data.expiration_date&&new Date(data.expiration_date)<new Date()){updateCouponMsg('❌ Expired.',false);return;}if(data.usage_limit!==null&&data.usage_count>=data.usage_limit){updateCouponMsg('❌ Limit reached.',false);return;}const st=cartItems.reduce((s,i)=>s+i.price*i.qty,0);appliedCoupon=code;appliedDiscount=data.discount_type==='percentage'?Math.round(st*data.discount_value/100):Math.min(st,data.discount_value);updateCouponMsg(`✅ You save EGP ${appliedDiscount.toLocaleString()}!`,true);recalcCheckout();}catch(e){updateCouponMsg('❌ Try again.',false);}}
     function updateCouponMsg(m,s){const el=document.getElementById('coupon-msg');el.textContent=m;el.style.display=m?'block':'none';el.style.color=s?'#25d366':'#e74c3c';}
 
-    async function submitOrder(e){e.preventDefault();const btn=document.getElementById('submit-btn');btn.disabled=true;btn.textContent='PLACING ORDER...';const nm=document.getElementById('cust-name').value.trim(),ph=document.getElementById('cust-phone').value.trim(),ad=document.getElementById('cust-address').value.trim(),ct=document.getElementById('cust-city').value,pm=document.getElementById('payment-method').value,st=cartItems.reduce((s,i)=>s+i.price*i.qty,0),df=st>=storeSettings.free_shipping_threshold?0:storeSettings.delivery_fee,gt=st-appliedDiscount+df;let ru=null;
+    async function submitOrder(e){e.preventDefault();const btn=document.getElementById('submit-btn');btn.disabled=true;btn.textContent='PLACING ORDER...';const nm=document.getElementById('cust-name').value.trim(),ph=document.getElementById('cust-phone').value.trim(),ad=document.getElementById('cust-address').value.trim(),ct=document.getElementById('cust-city').value,pm=document.getElementById('payment-method').value,st=cartItems.reduce((s,i)=>s+i.price*i.qty,0);const baseFee=(ct==='Cairo'||ct==='Giza')?Number(storeSettings.delivery_fee):(Number(storeSettings.delivery_fee_provinces)||70);const df=st>=storeSettings.free_shipping_threshold?0:baseFee;const gt=st-appliedDiscount+df;let ru=null;
     try{
     const ip=cartItems.map(i=>({product_id:i.id,quantity:i.qty,size:i.size||null,color:i.color||null}));let on='DRW-LOCAL';
     const hasDemoItems=cartItems.some(i=>typeof i.id==='string'&&i.id.startsWith('d'));

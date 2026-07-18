@@ -506,8 +506,12 @@
                                 <input type="text" id="set-cash" required>
                             </div>
                             <div class="form-group">
-                                <label for="set-fee">Standard Delivery Fee (EGP)</label>
+                                <label for="set-fee">Delivery Fee - Cairo & Giza (EGP)</label>
                                 <input type="number" id="set-fee" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-fee-gov">Delivery Fee - Other Governorates (EGP)</label>
+                                <input type="number" id="set-fee-gov" required>
                             </div>
                             <div class="form-group">
                                 <label for="set-free">Free Delivery Threshold (EGP)</label>
@@ -899,6 +903,7 @@
             document.getElementById('set-whatsapp').value = data.whatsapp_number || '';
             document.getElementById('set-cash').value = data.vodafone_cash_number || '';
             document.getElementById('set-fee').value = data.delivery_fee || 0;
+            document.getElementById('set-fee-gov').value = data.delivery_fee_provinces || 0;
             document.getElementById('set-free').value = data.free_shipping_threshold || 0;
             document.getElementById('set-hero-image').value = data.hero_image || '';
             document.getElementById('set-story-image').value = data.story_image || '';
@@ -913,6 +918,7 @@
                 whatsapp_number: document.getElementById('set-whatsapp').value,
                 vodafone_cash_number: document.getElementById('set-cash').value,
                 delivery_fee: parseFloat(document.getElementById('set-fee').value),
+                delivery_fee_provinces: parseFloat(document.getElementById('set-fee-gov').value),
                 free_shipping_threshold: parseFloat(document.getElementById('set-free').value),
                 hero_image: document.getElementById('set-hero-image').value.trim() || null,
                 story_image: document.getElementById('set-story-image').value.trim() || null,
