@@ -506,12 +506,8 @@
                                 <input type="text" id="set-cash" required>
                             </div>
                             <div class="form-group">
-                                <label for="set-fee">Delivery Fee - Cairo & Giza (EGP)</label>
+                                <label for="set-fee">Standard Delivery Fee (Fallback) (EGP)</label>
                                 <input type="number" id="set-fee" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="set-fee-gov">Delivery Fee - Other Governorates (EGP)</label>
-                                <input type="number" id="set-fee-gov" required>
                             </div>
                             <div class="form-group">
                                 <label for="set-free">Free Delivery Threshold (EGP)</label>
@@ -539,6 +535,17 @@
                             </div>
                         </div>
                         <button type="submit" class="btn">Update Settings</button>
+                    </form>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>Governorate Delivery Fees</h2>
+                    <p style="margin-bottom: 20px; font-size: 13px; color: var(--text-secondary);">Set custom delivery fees for each Egyptian governorate. These values update the checkout delivery price in real-time.</p>
+                    <form id="gov-fees-form" onsubmit="saveGovFees(event)">
+                        <div class="form-grid" id="gov-fees-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+                            <!-- Will be dynamically populated -->
+                        </div>
+                        <button type="submit" class="btn" style="margin-top: 20px;">Update Governorate Fees</button>
                     </form>
                 </div>
             </div>
@@ -689,6 +696,7 @@
             loadCoupons();
             loadSettings();
             loadAdmins();
+            loadGovFees();
         }
 
         async function loadOrders() {
@@ -903,7 +911,6 @@
             document.getElementById('set-whatsapp').value = data.whatsapp_number || '';
             document.getElementById('set-cash').value = data.vodafone_cash_number || '';
             document.getElementById('set-fee').value = data.delivery_fee || 0;
-            document.getElementById('set-fee-gov').value = data.delivery_fee_provinces || 0;
             document.getElementById('set-free').value = data.free_shipping_threshold || 0;
             document.getElementById('set-hero-image').value = data.hero_image || '';
             document.getElementById('set-story-image').value = data.story_image || '';
@@ -918,7 +925,6 @@
                 whatsapp_number: document.getElementById('set-whatsapp').value,
                 vodafone_cash_number: document.getElementById('set-cash').value,
                 delivery_fee: parseFloat(document.getElementById('set-fee').value),
-                delivery_fee_provinces: parseFloat(document.getElementById('set-fee-gov').value),
                 free_shipping_threshold: parseFloat(document.getElementById('set-free').value),
                 hero_image: document.getElementById('set-hero-image').value.trim() || null,
                 story_image: document.getElementById('set-story-image').value.trim() || null,
@@ -932,6 +938,57 @@
             else {
                 alert("Settings updated successfully!");
                 loadSettings();
+            }
+        }
+
+        let governoratesList = [];
+        async function loadGovFees() {
+            const { data, error } = await db.from('governorate_delivery_fees').select('*').order('governorate');
+            if (error) return console.error(error);
+            governoratesList = data || [];
+            
+            const grid = document.getElementById('gov-fees-grid');
+            grid.innerHTML = data.map(item => `
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="gov-fee-${item.governorate.replace(/\s+/g, '-')}" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">${item.governorate}</label>
+                    <input type="number" id="gov-fee-${item.governorate.replace(/\s+/g, '-')}" value="${item.delivery_fee}" required min="0" style="padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border);">
+                </div>
+            `).join('');
+        }
+
+        async function saveGovFees(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            
+            try {
+                const updates = governoratesList.map(item => {
+                    const input = document.getElementById(`gov-fee-${item.governorate.replace(/\s+/g, '-')}`);
+                    return {
+                        governorate: item.governorate,
+                        delivery_fee: parseFloat(input.value) || 0
+                    };
+                });
+                
+                const promises = updates.map(update => 
+                    db.from('governorate_delivery_fees').update({ delivery_fee: update.delivery_fee }).eq('governorate', update.governorate)
+                );
+                
+                const results = await Promise.all(promises);
+                const errors = results.filter(r => r.error);
+                
+                if (errors.length > 0) {
+                    alert("Some updates failed: " + errors.map(e => e.error.message).join(', '));
+                } else {
+                    alert("Governorate delivery fees updated successfully!");
+                    loadGovFees();
+                }
+            } catch (err) {
+                alert("Error saving: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Update Governorate Fees';
             }
         }
 
