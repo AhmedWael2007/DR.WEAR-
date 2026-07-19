@@ -976,14 +976,33 @@
 
         .mobile-nav-footer { margin-top: auto; font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.1em; }
 
+        .product-img-container { position: relative; overflow: hidden; }
+
         .stock-badge {
-            position: absolute; top: 10px; left: 10px;
-            padding: 5px 12px; font-size: 9px; font-weight: 700;
-            letter-spacing: 0.08em; border-radius: 4px; text-transform: uppercase;
+            position: absolute; z-index: 5;
+            font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
         }
 
-        .stock-badge.out { background: rgba(10,10,10,0.9); color: var(--text-muted); border: 1px solid var(--border); }
-        .stock-badge.low { background: var(--burgundy); color: #fff; }
+        .stock-badge.out {
+            inset: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(5, 5, 5, 0.62);
+            color: #fff; font-size: 14px;
+            backdrop-filter: blur(1px);
+            border: none; border-radius: 0;
+        }
+        .stock-badge.out::after {
+            content: 'SOLD OUT';
+            border: 2px solid rgba(255,255,255,0.7);
+            padding: 8px 22px;
+            letter-spacing: 0.22em;
+            font-size: 12px;
+        }
+
+        .stock-badge.low {
+            top: 10px; left: 10px;
+            background: var(--burgundy); color: #fff;
+            padding: 5px 12px; font-size: 9px; border-radius: 4px;
+        }
 
         /* ═══════ TOAST ═══════ */
         .toast {
@@ -1560,7 +1579,7 @@
     c.innerHTML=data.map(x=>{
         const dp=x.price<x.originalPrice?`<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px;margin-right:6px;">EGP ${Number(x.originalPrice).toLocaleString()}</span><strong style="color:var(--burgundy-light);">EGP ${Number(x.price).toLocaleString()}</strong>`:`<strong>EGP ${Number(x.price).toLocaleString()}</strong>`;
         const oos=x.stock<=0,low=x.stock>0&&x.stock<=3;
-        return`<article class="product" ${oos?'style="opacity:0.5;"':''}><div class="product-img-container" onclick="openProductModal('${x.id}')" style="cursor:pointer;"><img src="${x.image}" alt="${x.name}" loading="lazy">${oos?'<span class="stock-badge out">Sold Out</span>':''}${low?`<span class="stock-badge low">Only ${x.stock} left</span>`:''}</div><h3 onclick="openProductModal('${x.id}')" style="cursor:pointer;">${x.name}</h3><p>${x.category}</p>${dp}<button class="quick-add-btn" onclick="openProductModal('${x.id}')" ${oos?'disabled style="opacity:0.4;cursor:not-allowed;"':''}>${oos?'Sold Out':'Order Now'}</button></article>`;
+        return`<article class="product"><div class="product-img-container" onclick="openProductModal('${x.id}')" style="cursor:pointer;"><img src="${x.image}" alt="${x.name}" loading="lazy" ${oos?'style="filter:grayscale(40%) brightness(0.7);"':''}>${oos?'<span class="stock-badge out"></span>':''}${low&&!oos?`<span class="stock-badge low">Only ${x.stock} left</span>`:''}</div><h3 onclick="openProductModal('${x.id}')" style="cursor:pointer;">${x.name}</h3><p>${x.category}</p>${dp}<button class="quick-add-btn" onclick="openProductModal('${x.id}')" ${oos?'disabled style="opacity:0.4;cursor:not-allowed;"':''}>${oos?'Sold Out':'Order Now'}</button></article>`;
     }).join('');}
 
     let currentModalProduct = null;
